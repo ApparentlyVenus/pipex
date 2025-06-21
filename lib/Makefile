@@ -23,31 +23,29 @@ OBJS = $(SRCS:.c=.o)
 AR = ar rcs
 RM = rm -f
 
+GREEN := \033[0;32m
+BLUE  := \033[0;34m
+RED   := \033[0;31m
+RESET := \033[0m
+
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	@echo "Creating $(NAME) from mandatory objects..."
-	$(AR) $(NAME) $(OBJS)
+	@echo "$(BLUE)[AR] $(NAME)$(RESET)"
+	@$(AR) $@ $^
 
-: CFLAGS +=
-: $(NAME) $(_OBJS)
-	@echo "Adding  objects to $(NAME)..."
-	@rm -f $(NAME)
-	$(AR) $(NAME) $(OBJS) $(_OBJS)
-
-$(SRC_DIR)/%.o: $(SRC_DIR)/%.c $(INCLUDES_DIR)/libft.h
-	@echo "Compiling $<..."
-	$(CC) $(CFLAGS) -c $< -o $@
+$(SRC_DIR)/%.o: $(SRC_DIR)/%.c $(INC_DIR)/libft.h
+	@echo "$(GREEN)[CC] $<$(RESET)"
+	@$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	@echo "Cleaning object files..."
-	@$(RM) $(OBJS) $(_OBJS)
+	@echo "$(RED)[CLEAN] object files$(RESET)"
+	@$(RM) $(OBJS)
 
 fclean: clean
-	@echo "Removing library $(NAME)..."
+	@echo "$(RED)[FCLEAN] $(NAME)$(RESET)"
 	@$(RM) $(NAME)
 
 re: fclean all
-	@echo "Rebuilt all (mandatory)."
 
-.PHONY: all  clean fclean re
+.PHONY: all clean fclean re
