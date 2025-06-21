@@ -6,7 +6,7 @@
 /*   By: odana <odana@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/20 11:23:36 by odana             #+#    #+#             */
-/*   Updated: 2025/06/21 12:12:35 by odana            ###   ########.fr       */
+/*   Updated: 2025/06/21 22:59:11 by odana            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,30 +55,19 @@ typedef struct s_node
 	struct s_node	*next;
 }	t_node;
 
-/*
- * Parse command-line arguments into a linked list including NODE_PIPE nodes.
- * argv must include literal "|" tokens 
- * 	(quoted/escaped so shell doesn’t intercept).
- * Returns head of list on success, or NULL on error (syntax issues, OOM).
- *
- * Usage:
- *   Normal:   ./pipex infile cmd1_args... "|" cmd2_args... ... outfile
- *   Heredoc:  ./pipex here_doc LIMIT cmd1_args... "|" cmd2_args... ... outfile
- */
-t_node	*parse_args_with_pipes(int argc, char **argv);
+// parsing logic + utils
+t_node	*parse_args(int argc, char **argv);
+t_node	*parse_sequence(t_node *head, int argc, char **argv, int i);
+t_node	*parse_standard_args(int argc, char **argv);
+t_node	*parse_heredoc_args(int argc, char **argv);
+t_node	*create_node(t_node_type type);
+t_node	*parse_cmd_node(t_node *current, char **argv, int *i, int *cmd);
+t_node	*parse_pipe_node(t_node *current, char **argv, int *i, int *cmd);
+t_node	*create_infile_node(char **argv);
+int		parsing_mode(int argc, char **argv);
+void	free_split(char **split);
 
-/*
- * Free the entire linked list, including strdup’d strings and args arrays.
- */
-void	free_node_list(t_node *head);
-
-/*
- * Execute the pipeline described by the linked list:
- *  - Opens infile or handles heredoc
- *  - Forks each NODE_CMD in sequence, wiring stdin/stdout via pipes or outfile
- *  - Closes FDs appropriately and waits for children
- * envp is passed through for exec.
- */
+// execution logic
 void	exec_pipeline(t_node *head, char **envp);
 
 #endif
