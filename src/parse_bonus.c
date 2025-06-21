@@ -6,12 +6,26 @@
 /*   By: odana <odana@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/21 22:15:31 by odana             #+#    #+#             */
-/*   Updated: 2025/06/21 22:29:07 by odana            ###   ########.fr       */
+/*   Updated: 2025/06/21 22:54:22 by odana            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/pipex_bonus.h"
 #include "../lib/inc/libft.h"
+
+int	parsing_mode(int argc, char **argv)
+{
+	if (argc < 5)
+		return (0);
+	if (ft_strcmp(argv[1], "here_doc") == 0)
+	{
+		if (argc < 6)
+			return (0);
+		return (2);
+	}
+	else
+		return (1);
+}
 
 t_node	*parse_args(int argc, char **argv)
 {
@@ -35,7 +49,7 @@ t_node	*parse_standard_args(int argc, char **argv)
 	head = create_infile_node(argv);
 	if (!head)
 		return (NULL);
-	current = parse_sequence(head, argc, argc, 2);
+	current = parse_sequence(head, argc, argv, 2);
 	if (!current)
 		return (NULL);
 	out_node = create_node(NODE_OUTFILE);

@@ -6,7 +6,7 @@
 /*   By: odana <odana@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/21 22:28:41 by odana             #+#    #+#             */
-/*   Updated: 2025/06/21 22:29:51 by odana            ###   ########.fr       */
+/*   Updated: 2025/06/21 22:55:29 by odana            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,20 +25,6 @@ t_node	*create_node(t_node_type type)
 	node->args = NULL;
 	node->next = NULL;
 	return (node);
-}
-
-int	parsing_mode(int argc, char **argv)
-{
-	if (argc < 5)
-		return (0);
-	if (ft_strcmp(argv[1], "here_doc") == 0)
-	{
-		if (argc < 6)
-			return (0);
-		return (2);
-	}
-	else
-		return (1);
 }
 
 t_node	*parse_cmd_node(t_node *current, char **argv, int *i, int *cmd)
@@ -82,4 +68,19 @@ t_node	*create_infile_node(char **argv)
 	if (!head->value)
 		return (free_node_list(head), NULL);
 	return (head);
+}
+
+void	free_split(char **split)
+{
+	int	i;
+
+	if (!split)
+		return ;
+	i = 0;
+	while (split[i])
+	{
+		free(split[i]);
+		i++;
+	}
+	free(split);
 }
