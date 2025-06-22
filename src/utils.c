@@ -6,7 +6,7 @@
 /*   By: odana <odana@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/21 09:14:15 by odana             #+#    #+#             */
-/*   Updated: 2025/06/22 00:58:50 by odana            ###   ########.fr       */
+/*   Updated: 2025/06/22 10:47:42 by odana            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ char	*find_path(char *cmd, char **envp)
 		path = ft_strjoin(part_path, cmd);
 		free(part_path);
 		if (access(path, X_OK) == 0)
-			return (path);
+			return (free_split(split), path);
 		free(path);
 		i++;
 	}
