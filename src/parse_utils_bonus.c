@@ -6,7 +6,7 @@
 /*   By: odana <odana@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/21 22:28:41 by odana             #+#    #+#             */
-/*   Updated: 2025/06/22 01:11:09 by odana            ###   ########.fr       */
+/*   Updated: 2025/06/22 13:29:08 by odana            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,13 +26,11 @@ t_node	*create_node(t_node_type type)
 	return (node);
 }
 
-t_node	*parse_cmd_node(t_node *current, char **argv, int *i, int *cmd)
+t_node	*parse_cmd_node(t_node *current, char **argv, int *i)
 {
 	char	**cmd_args;
 	t_node	*cmd_node;
 
-	if (ft_strcmp(argv[*i], "|") == 0)
-		return (NULL);
 	cmd_args = ft_split(argv[*i], ' ');
 	if (!cmd_args)
 		return (NULL);
@@ -40,20 +38,18 @@ t_node	*parse_cmd_node(t_node *current, char **argv, int *i, int *cmd)
 	if (!cmd_node)
 		return (free_split(cmd_args), NULL);
 	return (cmd_node->args = cmd_args, current->next = cmd_node,
-		*cmd = 0, (*i)++, cmd_node);
+		(*i)++, cmd_node);
 }
 
-t_node	*parse_pipe_node(t_node *current, char **argv, int *i, int *cmd)
+t_node	*parse_pipe_node(t_node *current)
 {
 	t_node	*pipe_node;
 
-	if (ft_strcmp(argv[*i], "|") != 0)
-		return (NULL);
 	pipe_node = create_node(NODE_PIPE);
 	if (!pipe_node)
 		return (NULL);
 	current->next = pipe_node;
-	return (*cmd = 1, (*i)++, pipe_node);
+	return (pipe_node);
 }
 
 t_node	*create_infile_node(char **argv)
@@ -69,17 +65,15 @@ t_node	*create_infile_node(char **argv)
 	return (head);
 }
 
-void	free_split(char **split)
+void	wait_for_children(t_exec *exec)
 {
 	int	i;
+	int	status;
 
-	if (!split)
-		return ;
 	i = 0;
-	while (split[i])
+	while (i < exec->cmd_count)
 	{
-		free(split[i]);
+		waitpid(exec->pids[i], &status, 0);
 		i++;
 	}
-	free(split);
 }

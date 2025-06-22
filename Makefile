@@ -6,7 +6,8 @@ LIB_DIR = lib
 
 SRC_FILES = pipex.c utils.c
 SRC_BONUS = parse_bonus.c parse_utils_bonus.c \
-			pipex_bonus.c pipex_utils_bonus.c
+			pipex_bonus.c pipex_utils_bonus.c \
+			main_bonus.c utils.c
 
 SRCS = $(addprefix $(SRC_DIR)/, $(SRC_FILES))
 SRCS_BONUS = $(addprefix $(SRC_DIR)/, $(SRC_BONUS))

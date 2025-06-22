@@ -6,7 +6,7 @@
 /*   By: odana <odana@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/21 22:15:31 by odana             #+#    #+#             */
-/*   Updated: 2025/06/22 00:59:02 by odana            ###   ########.fr       */
+/*   Updated: 2025/06/22 09:08:02 by odana            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,22 +89,21 @@ t_node	*parse_sequence(t_node *head, int argc, char **argv, int i)
 {
 	t_node	*current;
 	t_node	*new_node;
-	int		cmd;
 
 	current = head;
-	cmd = 1;
 	while (i < argc - 1)
 	{
-		new_node = NULL;
-		if (cmd)
-			new_node = parse_cmd_node(current, argv, &i, &cmd);
-		else
-			new_node = parse_pipe_node(current, argv, &i, &cmd);
+		new_node = parse_cmd_node(current, argv, &i);
 		if (!new_node)
 			return (free_node_list(head), NULL);
 		current = new_node;
+		if (i < argc - 1)
+		{
+			new_node = parse_pipe_node(current);
+			if (!new_node)
+				return (free_node_list(head), NULL);
+			current = new_node;
+		}
 	}
-	if (cmd)
-		return (free_node_list(head), NULL);
 	return (current);
 }

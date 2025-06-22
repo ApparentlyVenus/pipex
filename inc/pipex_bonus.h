@@ -6,7 +6,19 @@
 /*   By: odana <odana@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/20 11:23:36 by odana             #+#    #+#             */
-/*   Updated: 2025/06/22 01:16:31 by odana            ###   ########.fr       */
+/*   Updated: 2025/06/22 13:27:58 by odana            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   pipex_bonus.h                                      :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: odana <odana@student.42.fr>                +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/06/20 11:23:36 by odana             #+#    #+#             */
+/*   Updated: 2025/06/22 12:49:43 by odana            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,27 +51,43 @@ typedef struct s_node
 	struct s_node	*next;
 }	t_node;
 
-// parsing logic + utils
+typedef struct s_exec
+{
+	int		prev_fd;
+	int		pipe_fd[2];
+	pid_t	*pids;
+	int		cmd_count;
+	int		cmd_index;
+}	t_exec;
+
+// Parsing functions
 t_node	*parse_args(int argc, char **argv);
 t_node	*parse_sequence(t_node *head, int argc, char **argv, int i);
 t_node	*parse_standard_args(int argc, char **argv);
 t_node	*parse_heredoc_args(int argc, char **argv);
 t_node	*create_node(t_node_type type);
-t_node	*parse_cmd_node(t_node *current, char **argv, int *i, int *cmd);
-t_node	*parse_pipe_node(t_node *current, char **argv, int *i, int *cmd);
+t_node	*parse_cmd_node(t_node *current, char **argv, int *i);
+t_node	*parse_pipe_node(t_node *current);
 t_node	*create_infile_node(char **argv);
 int		parsing_mode(int argc, char **argv);
+
+// Execution functions
+void	execute_pipeline(t_node *head, char **envp);
+void	setup_heredoc(t_node *heredoc_node);
+void	setup_input(t_node *head);
+void	setup_output(t_node *tail);
+void	execute_command(t_node *cmd_node, char **envp);
+int		count_commands(t_node *head);
+char	*find_path(char *cmd, char **envp);
+t_node	*find_tail(t_node *head);
+void	handle_child_process(t_exec *exec, t_node *cmd,
+			t_node *head, char **envp);
+void	process_command(t_exec *exec, t_node *cmd, t_node *head, char **envp);
+void	wait_for_children(t_exec *exec);
+
+// Utility functions
 void	free_split(char **split);
 void	free_node_list(t_node *head);
-
-// execution logic
-void	exec_pipeline(t_node *head, char **envp, int fd[2]);
-void	process_infile(t_node *infile);
-void	process_outfile(t_node *outfile);
-void	process_child(t_node *node, int prev_fd, int fd[2], char **envp);
-void	handle_heredoc(t_node	*heredoc);
-void	exec_cmd(t_node *node, char **envp);
-char	*find_path(char *cmd, char **envp);
 void	perror_exit(char *msg);
 
 #endif

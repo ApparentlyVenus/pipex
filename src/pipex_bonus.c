@@ -6,127 +6,103 @@
 /*   By: odana <odana@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/21 23:37:07 by odana             #+#    #+#             */
-/*   Updated: 2025/06/22 01:15:18 by odana            ###   ########.fr       */
+/*   Updated: 2025/06/22 13:27:04 by odana            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/pipex_bonus.h"
 
-void	exec_pipeline(t_node *head, char **envp, int fd[2])
-{
-	int		prev_fd;
-	t_node	*node;
-
-	prev_fd = -1;
-	node = head;
-	while (node)
-	{
-		if (node->type == NODE_INFILE)
-			process_infile(node);
-		else if (node->type == NODE_OUTFILE)
-			process_outfile(node);
-		else if (node->type == NODE_CMD)
-		{
-			pipe(fd);
-			process_child(node, prev_fd, fd, envp);
-			if (prev_fd != -1)
-				close(prev_fd);
-			prev_fd = fd[0];
-			close(fd[1]);
-		}
-		node = node->next;
-	}
-	while (wait(NULL) > 0)
-		;
-	unlink(".heredoc");
-}
-
-void	handle_heredoc(t_node	*heredoc)
-{
-	char	*line;
-	int		fd;
-
-	fd = open(".heredoc", O_CREAT | O_WRONLY | O_TRUNC, 0644);
-	if (fd < 0)
-		perror_exit("heredoc open");
-	while (1)
-	{
-		write(1, "> ", 2);
-		line = get_next_line(STDIN_FILENO);
-		if (!line)
-			break ;
-		if (ft_strncmp(line, heredoc->value, ft_strlen(heredoc->value) == 0
-				&& line[ft_strlen(heredoc->value)] == '\n'))
-		{
-			free(line);
-			break ;
-		}
-		ft_putstr_fd(line, fd);
-		free (line);
-	}
-	close (fd);
-	free(heredoc->value);
-	heredoc->value = ft_strdup(".heredoc");
-	heredoc->type = NODE_INFILE;
-}
-
-void	exec_cmd(t_node *node, char **envp)
+void	execute_command(t_node *cmd_node, char **envp)
 {
 	char	*path;
 
-	if (!node || node->type != NODE_CMD || !node->args)
-		perror_exit("invalid cmd");
-	path = find_path(node->args[0], envp);
+	if (!cmd_node->args || !cmd_node->args[0])
+		exit(127);
+	path = find_path(cmd_node->args[0], envp);
 	if (!path)
 	{
-		free_split(node->args);
-		perror("cmd not found");
+		ft_putstr_fd("pipex: command not found: ", STDERR_FILENO);
+		ft_putendl_fd(cmd_node->args[0], STDERR_FILENO);
 		exit(127);
 	}
-	if (execve(path, node->args, envp) == -1)
-		perror_exit("execve");
-}
-
-void	process_child(t_node *node, int prev_fd, int fd[2], char **envp)
-{
-	pid_t	pid;
-
-	pid = fork();
-	if (pid < 0)
-		perror_exit("fork");
-	if (pid == 0)
+	if (execve(path, cmd_node->args, envp) == -1)
 	{
-		if (prev_fd != -1)
-		{
-			dup2(prev_fd, STDIN_FILENO);
-			close(prev_fd);
-		}
-		if (node->next && node->next->type == NODE_PIPE)
-		{
-			close(fd[0]);
-			dup2(fd[1], STDOUT_FILENO);
-			close(fd[1]);
-		}
-		else
-		{
-			close(fd[0]);
-			close(fd[1]);
-		}
-		exec_cmd(node, envp);
+		free(path);
+		perror_exit("execve");
 	}
 }
 
-int	main(int argc, char **argv, char **envp)
+int	count_commands(t_node *head)
 {
-	t_node	*head;
-	int		fd[2];
+	t_node	*current;
+	int		count;
 
-	head = parse_args(argc, argv);
-	if (!head)
-		perror_exit("parse failed");
-	if (head->type == NODE_HEREDOC)
-		handle_heredoc(head);
-	exec_pipeline(head, envp, fd);
-	free_node_list(head);
-	return (0);
+	count = 0;
+	current = head;
+	while (current)
+	{
+		if (current->type == NODE_CMD)
+			count++;
+		current = current->next;
+	}
+	return (count);
+}
+
+t_node	*find_tail(t_node *head)
+{
+	t_node	*current;
+
+	current = head;
+	while (current->next)
+		current = current->next;
+	return (current);
+}
+
+void	handle_child_process(t_exec *exec, t_node *cmd,
+	t_node *head, char **envp)
+{
+	t_node	*tail;
+
+	if (exec->cmd_index > 0)
+	{
+		dup2(exec->prev_fd, STDIN_FILENO);
+		close(exec->prev_fd);
+	}
+	else
+		setup_input(head);
+	if (exec->cmd_index < exec->cmd_count - 1)
+	{
+		close(exec->pipe_fd[0]);
+		dup2(exec->pipe_fd[1], STDOUT_FILENO);
+		close(exec->pipe_fd[1]);
+	}
+	else
+	{
+		tail = find_tail(head);
+		setup_output(tail);
+	}
+	execute_command(cmd, envp);
+}
+
+void	process_command(t_exec *exec, t_node *cmd,
+	t_node *head, char **envp)
+{
+	if (exec->cmd_index < exec->cmd_count - 1)
+	{
+		if (pipe(exec->pipe_fd) == -1)
+			perror_exit("pipe");
+	}
+	exec->pids[exec->cmd_index] = fork();
+	if (exec->pids[exec->cmd_index] == -1)
+		perror_exit("fork");
+	if (exec->pids[exec->cmd_index] == 0)
+		handle_child_process(exec, cmd, head, envp);
+	if (exec->prev_fd != -1)
+		close(exec->prev_fd);
+	if (exec->cmd_index < exec->cmd_count - 1)
+	{
+		close(exec->pipe_fd[1]);
+		exec->prev_fd = exec->pipe_fd[0];
+	}
+	exec->cmd_index++;
 }

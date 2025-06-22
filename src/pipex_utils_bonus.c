@@ -5,79 +5,68 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: odana <odana@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/06/22 01:03:14 by odana             #+#    #+#             */
-/*   Updated: 2025/06/22 01:15:24 by odana            ###   ########.fr       */
+/*   Created: 2025/06/22 13:15:27 by odana             #+#    #+#             */
+/*   Updated: 2025/06/22 13:19:23 by odana            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/pipex_bonus.h"
 
-void	process_infile(t_node *infile)
+void	setup_heredoc(t_node *heredoc_node)
 {
-	int	fdin;
+	int		pipe_fd[2];
+	char	*line;
+	char	*value;
 
-	fdin = open(infile->value, O_RDONLY);
-	if (fdin < 0)
-		perror_exit("infile open");
-	dup2(fdin, STDIN_FILENO);
-	close(fdin);
-}
-
-void	process_outfile(t_node *outfile)
-{
-	int	fdout;
-
-	fdout = open(outfile->value, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-	if (fdout < 0)
-		perror_exit("outfile open");
-	dup2(fdout, STDOUT_FILENO);
-	close(fdout);
-}
-
-char	*find_path(char *cmd, char **envp)
-{
-	char	**split;
-	char	*path;
-	int		i;
-	char	*part_path;
-
-	i = 0;
-	while (ft_strnstr(envp[i], "PATH=", 5) == NULL)
-		i++;
-	split = ft_split(envp[i] + 5, ':');
-	i = 0;
-	while (split[i])
+	if (pipe(pipe_fd) == -1)
+		perror_exit("heredoc pipe");
+	value = heredoc_node->value;
+	while (1)
 	{
-		part_path = ft_strjoin(split[i], "/");
-		path = ft_strjoin(part_path, cmd);
-		free(part_path);
-		if (access(path, X_OK) == 0)
-			return (path);
-		free(path);
-		i++;
+		write(STDOUT_FILENO, "heredoc> ", 9);
+		line = get_next_line(STDIN_FILENO);
+		if (!line)
+			break ;
+		if (ft_strncmp(line, value, ft_strlen(value)) == 0
+			&& line[ft_strlen(value)] == '\n')
+		{
+			free(line);
+			break ;
+		}
+		write(pipe_fd[1], line, ft_strlen(line));
+		free(line);
 	}
-	free_split(split);
-	return (NULL);
+	close(pipe_fd[1]);
+	dup2(pipe_fd[0], STDIN_FILENO);
+	close(pipe_fd[0]);
 }
 
-void	free_node_list(t_node *head)
+void	setup_input(t_node *head)
 {
-	t_node	*tmp;
+	int	fd;
 
-	while (head)
+	if (head->type == NODE_HEREDOC)
+		setup_heredoc(head);
+	else if (head->type == NODE_INFILE)
 	{
-		tmp = head->next;
-		if (head->value)
-			free(head->value);
-		if (head->args)
-			free_split(head->args);
-		free(head);
-		head = tmp;
+		fd = open(head->value, O_RDONLY);
+		if (fd == -1)
+			perror_exit("infile");
+		dup2(fd, STDIN_FILENO);
+		close(fd);
 	}
 }
 
-void	perror_exit(char *msg)
+void	setup_output(t_node *tail)
 {
-	perror(msg);
-	exit(EXIT_FAILURE);
+	int	fd;
+
+	if (tail->type == NODE_OUTFILE)
+	{
+		fd = open(tail->value, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+		if (fd == -1)
+			perror_exit("outfile");
+		dup2(fd, STDOUT_FILENO);
+		close(fd);
+	}
 }
