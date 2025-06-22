@@ -6,12 +6,11 @@
 /*   By: odana <odana@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/21 22:15:31 by odana             #+#    #+#             */
-/*   Updated: 2025/06/21 22:54:22 by odana            ###   ########.fr       */
+/*   Updated: 2025/06/22 00:59:02 by odana            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/pipex_bonus.h"
-#include "../lib/inc/libft.h"
 
 int	parsing_mode(int argc, char **argv)
 {

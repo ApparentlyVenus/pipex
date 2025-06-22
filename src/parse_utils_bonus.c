@@ -6,12 +6,11 @@
 /*   By: odana <odana@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/21 22:28:41 by odana             #+#    #+#             */
-/*   Updated: 2025/06/21 22:55:29 by odana            ###   ########.fr       */
+/*   Updated: 2025/06/22 01:11:09 by odana            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/pipex_bonus.h"
-#include "../lib/inc/libft.h"
 
 t_node	*create_node(t_node_type type)
 {
