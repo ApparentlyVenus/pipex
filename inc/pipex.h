@@ -6,7 +6,7 @@
 /*   By: odana <odana@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/21 12:12:09 by odana             #+#    #+#             */
-/*   Updated: 2025/06/21 12:34:33 by odana            ###   ########.fr       */
+/*   Updated: 2025/06/22 00:58:36 by odana            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,9 @@
 # include <fcntl.h>
 # include <sys/wait.h>
 # include <errno.h>
+
+# include "../lib/inc/libft.h"
+# include "../lib/inc/get_next_line.h"
 
 char	*find_path(char *cmd, char **envp);
 void	free_split(char **split);
