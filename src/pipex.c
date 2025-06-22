@@ -6,12 +6,11 @@
 /*   By: odana <odana@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/21 12:14:09 by odana             #+#    #+#             */
-/*   Updated: 2025/06/21 21:48:21 by odana            ###   ########.fr       */
+/*   Updated: 2025/06/22 00:58:53 by odana            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/pipex.h"
-#include "../lib/inc/libft.h"
 
 void	child1(char **argv, char **envp, int *fd)
 {

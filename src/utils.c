@@ -6,12 +6,11 @@
 /*   By: odana <odana@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/21 09:14:15 by odana             #+#    #+#             */
-/*   Updated: 2025/06/21 13:11:05 by odana            ###   ########.fr       */
+/*   Updated: 2025/06/22 00:58:50 by odana            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/pipex.h"
-#include "../lib/inc/libft.h"
 
 char	*find_path(char *cmd, char **envp)
 {
