@@ -5,81 +5,108 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: odana <odana@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/06/21 12:14:09 by odana             #+#    #+#             */
-/*   Updated: 2025/06/22 10:33:16 by odana            ###   ########.fr       */
+/*   Created: 2025/06/21 23:37:07 by odana             #+#    #+#             */
+/*   Updated: 2025/06/24 21:17:06 by odana            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/pipex.h"
 
-void	child1(char **argv, char **envp, int *fd)
+void	execute_command(t_node *cmd_node, char **envp, t_node *head)
 {
-	int	filein;
+	char	*path;
 
-	filein = open(argv[1], O_RDONLY);
-	if (filein < 0)
+	if (!cmd_node->args || !*cmd_node->args || !**cmd_node->args)
+		perror_exit("empty command", 127, head);
+	path = find_path(cmd_node->args[0], envp);
+	if (!path)
+		perror_exit("command not found", 127, head);
+	if (execve(path, cmd_node->args, envp) == -1)
 	{
-		perror(argv[1]);
-		exit(EXIT_FAILURE);
+		free(path);
+		perror_exit("execve", 127, head);
 	}
-	if (dup2(filein, STDIN_FILENO) < 0)
-		perror_exit("dup2 infile");
-	if (dup2(fd[1], STDOUT_FILENO) < 0)
-		perror_exit("dup2 pipe write");
-	close(filein);
-	close(fd[0]);
-	close(fd[1]);
-	execute_cmd(argv[2], envp);
-	perror("execute_cmd");
-	exit(EXIT_FAILURE);
 }
 
-void	child2(char **argv, char **envp, int *fd)
+int	count_commands(t_node *head)
 {
-	int	fileout;
+	t_node	*current;
+	int		count;
 
-	fileout = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0644);
-	if (fileout < 0)
+	count = 0;
+	current = head;
+	while (current)
 	{
-		perror(argv[4]);
-		exit(EXIT_FAILURE);
+		if (current->type == NODE_CMD)
+			count++;
+		current = current->next;
 	}
-	if (dup2(fd[0], STDIN_FILENO) < 0)
-		perror_exit("dup2 pipe read");
-	if (dup2(fileout, STDOUT_FILENO) < 0)
-		perror_exit("dup2 outfile");
-	close(fileout);
-	close(fd[0]);
-	close(fd[1]);
-	execute_cmd(argv[3], envp);
-	perror("execute_cmd");
-	exit(EXIT_FAILURE);
+	return (count);
 }
 
-int	main(int argc, char **argv, char **envp)
+void	handle_child_process(t_exec *exec, t_node *cmd,
+	t_node *head, char **envp)
 {
-	int		fd[2];
-	pid_t	pid1;
-	pid_t	pid2;
-	int		status;
+	free(exec->pids);
+	exec->pids = NULL;
+	if (exec->cmd_index > 0)
+	{
+		dup2(exec->prev_fd, STDIN_FILENO);
+		close(exec->prev_fd);
+	}
+	else
+		setup_input(head);
+	if (exec->cmd_index < exec->cmd_count - 1)
+	{
+		close(exec->pipe_fd[0]);
+		dup2(exec->pipe_fd[1], STDOUT_FILENO);
+		close(exec->pipe_fd[1]);
+	}
+	else
+		handle_sigpipe(head);
+	execute_command(cmd, envp, head);
+}
 
-	if (argc != 5)
-		perror_exit("incorrect number of args");
-	if (pipe(fd) < 0)
-		perror_exit("pipe");
-	pid1 = fork();
-	if (pid1 < 0)
-		perror_exit("fork");
-	if (pid1 == 0)
-		child1(argv, envp, fd);
-	pid2 = fork();
-	if (pid2 < 0)
-		perror_exit("fork");
-	if (pid2 == 0)
-		child2(argv, envp, fd);
-	close(fd[0]);
-	close(fd[1]);
-	waitpid(pid1, NULL, 0);
-	waitpid(pid2, &status, 0);
-	exit(WEXITSTATUS(status));
+void	handle_sigpipe(t_node *head)
+{
+	char	*line;
+	t_node	*tail;
+	int		output;
+
+	tail = find_tail(head);
+	output = setup_output(tail, head);
+	if (output != 0)
+	{
+		line = get_next_line(STDIN_FILENO);
+		while (line)
+		{
+			free(line);
+			line = get_next_line(STDIN_FILENO);
+		}
+		free_node_list(head);
+		exit(output);
+	}
+}
+
+void	process_command(t_exec *exec, t_node *cmd,
+	t_node *head, char **envp)
+{
+	if (exec->cmd_index < exec->cmd_count - 1)
+	{
+		if (pipe(exec->pipe_fd) == -1)
+			perror_exit("pipe", 1, NULL);
+	}
+	exec->pids[exec->cmd_index] = fork();
+	if (exec->pids[exec->cmd_index] == -1)
+		perror_exit("fork", 1, NULL);
+	if (exec->pids[exec->cmd_index] == 0)
+		handle_child_process(exec, cmd, head, envp);
+	if (exec->prev_fd != -1)
+		close(exec->prev_fd);
+	if (exec->cmd_index < exec->cmd_count - 1)
+	{
+		close(exec->pipe_fd[1]);
+		exec->prev_fd = exec->pipe_fd[0];
+	}
+	exec->cmd_index++;
 }

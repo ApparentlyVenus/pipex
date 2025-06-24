@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   parse_utils_bonus.c                                :+:      :+:    :+:   */
+/*   parse_utils.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: odana <odana@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/21 22:28:41 by odana             #+#    #+#             */
-/*   Updated: 2025/06/22 13:29:08 by odana            ###   ########.fr       */
+/*   Updated: 2025/06/24 21:20:05 by odana            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../inc/pipex_bonus.h"
+#include "../inc/pipex.h"
 
 t_node	*create_node(t_node_type type)
 {
@@ -31,9 +31,15 @@ t_node	*parse_cmd_node(t_node *current, char **argv, int *i)
 	char	**cmd_args;
 	t_node	*cmd_node;
 
-	cmd_args = ft_split(argv[*i], ' ');
-	if (!cmd_args)
+	if (!argv[*i] || !*argv[*i])
 		return (NULL);
+	cmd_args = ft_split(argv[*i], ' ');
+	if (!cmd_args || !*cmd_args || !**cmd_args)
+	{
+		if (cmd_args)
+			free_split(cmd_args);
+		return (NULL);
+	}
 	cmd_node = create_node(NODE_CMD);
 	if (!cmd_node)
 		return (free_split(cmd_args), NULL);
@@ -63,17 +69,4 @@ t_node	*create_infile_node(char **argv)
 	if (!head->value)
 		return (free_node_list(head), NULL);
 	return (head);
-}
-
-void	wait_for_children(t_exec *exec)
-{
-	int	i;
-	int	status;
-
-	i = 0;
-	while (i < exec->cmd_count)
-	{
-		waitpid(exec->pids[i], &status, 0);
-		i++;
-	}
 }

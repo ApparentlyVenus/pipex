@@ -4,16 +4,10 @@ SRC_DIR = src
 INC_DIR = inc
 LIB_DIR = lib
 
-SRC_FILES = pipex.c utils.c
-SRC_BONUS = parse_bonus.c parse_utils_bonus.c \
-			pipex_bonus.c pipex_utils_bonus.c \
-			main_bonus.c utils.c
+SRC_FILES = main.c parse_utils.c parse.c pipex.c utils.c utils2.c
 
 SRCS = $(addprefix $(SRC_DIR)/, $(SRC_FILES))
-SRCS_BONUS = $(addprefix $(SRC_DIR)/, $(SRC_BONUS))
-
 OBJS = $(SRCS:.c=.o)
-OBJS_BONUS = $(SRCS_BONUS:.c=.o)
 
 LIBFT = $(LIB_DIR)/libft.a
 
@@ -26,17 +20,13 @@ BLUE  = \033[0;34m
 RED   = \033[0;31m
 RESET = \033[0m
 
-all: $(NAME)
+all: bonus
 
-bonus: fclean $(NAME)_bonus
+bonus: $(NAME)
 
 $(NAME): $(LIBFT) $(OBJS)
-	@echo "$(GREEN)[Building mandatory: $(NAME)]$(RESET)"
+	@echo "$(GREEN)[Building: $(NAME)]$(RESET)"
 	@$(CC) $(OBJS) $(LIBFT) -o $(NAME)
-
-$(NAME)_bonus: $(LIBFT) $(OBJS_BONUS)
-	@echo "$(GREEN)[Building bonus: $(NAME)]$(RESET)"
-	@$(CC) $(OBJS_BONUS) $(LIBFT) -o $(NAME)
 
 $(LIBFT):
 	@echo "$(BLUE)[Building libft]$(RESET)"
@@ -48,7 +38,7 @@ $(SRC_DIR)/%.o: $(SRC_DIR)/%.c
 
 clean:
 	@echo "$(RED)[Cleaning object files]$(RESET)"
-	@rm -f $(OBJS) $(OBJS_BONUS)
+	@rm -f $(OBJS)
 	@$(MAKE) -C $(LIB_DIR) clean
 
 fclean: clean
@@ -58,6 +48,6 @@ fclean: clean
 
 re: fclean all
 
-.PHONY: all bonus clean fclean re
+.PHONY: all clean fclean re
 
 
