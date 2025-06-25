@@ -6,22 +6,22 @@
 /*   By: odana <odana@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/21 23:37:07 by odana             #+#    #+#             */
-/*   Updated: 2025/06/24 21:17:06 by odana            ###   ########.fr       */
+/*   Updated: 2025/06/25 11:21:30 by odana            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/pipex.h"
 
-void	execute_command(t_node *cmd_node, char **envp, t_node *head)
+void	execute_command(t_node *node, char **envp, t_node *head)
 {
 	char	*path;
 
-	if (!cmd_node->args || !*cmd_node->args || !**cmd_node->args)
+	if (!node->args || !*node->args || !**node->args)
 		perror_exit("empty command", 127, head);
-	path = find_path(cmd_node->args[0], envp);
+	path = find_path(node->args[0], envp);
 	if (!path)
 		perror_exit("command not found", 127, head);
-	if (execve(path, cmd_node->args, envp) == -1)
+	if (execve(path, node->args, envp) == -1)
 	{
 		free(path);
 		perror_exit("execve", 127, head);
@@ -47,8 +47,14 @@ int	count_commands(t_node *head)
 void	handle_child_process(t_exec *exec, t_node *cmd,
 	t_node *head, char **envp)
 {
-	free(exec->pids);
-	exec->pids = NULL;
+	t_node	*tail;
+
+	tail = find_tail(head);
+	if (exec->pids)
+	{
+		free(exec->pids);
+		exec->pids = NULL;
+	}
 	if (exec->cmd_index > 0)
 	{
 		dup2(exec->prev_fd, STDIN_FILENO);
@@ -63,29 +69,9 @@ void	handle_child_process(t_exec *exec, t_node *cmd,
 		close(exec->pipe_fd[1]);
 	}
 	else
-		handle_sigpipe(head);
+		if (setup_output(tail, head) != 0)
+			perror_exit("outfile", 1, head);
 	execute_command(cmd, envp, head);
-}
-
-void	handle_sigpipe(t_node *head)
-{
-	char	*line;
-	t_node	*tail;
-	int		output;
-
-	tail = find_tail(head);
-	output = setup_output(tail, head);
-	if (output != 0)
-	{
-		line = get_next_line(STDIN_FILENO);
-		while (line)
-		{
-			free(line);
-			line = get_next_line(STDIN_FILENO);
-		}
-		free_node_list(head);
-		exit(output);
-	}
 }
 
 void	process_command(t_exec *exec, t_node *cmd,

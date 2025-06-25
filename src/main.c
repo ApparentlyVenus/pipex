@@ -6,7 +6,7 @@
 /*   By: odana <odana@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/22 13:17:43 by odana             #+#    #+#             */
-/*   Updated: 2025/06/24 21:22:10 by odana            ###   ########.fr       */
+/*   Updated: 2025/06/25 11:31:53 by odana            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ int	main(int argc, char **argv, char **envp)
 	head = parse_args(argc, argv);
 	if (!head)
 	{
-		ft_putendl_fd("Usage: ./pipex infile cmd1 cmd2 outfile", 2);
+		ft_putendl_fd("Usage: ./pipex infile cmd1 cmd2 cmd3 ... outfile", 2);
 		ft_putendl_fd("   or: ./pipex here_doc LIMITER cmd1 cmd2 outfile", 2);
 		return (1);
 	}

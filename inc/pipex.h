@@ -6,7 +6,7 @@
 /*   By: odana <odana@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/20 11:23:36 by odana             #+#    #+#             */
-/*   Updated: 2025/06/24 21:00:46 by odana            ###   ########.fr       */
+/*   Updated: 2025/06/25 11:21:20 by odana            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,13 +76,12 @@ int		execute_pipeline(t_node *head, char **envp);
 void	setup_heredoc(t_node *heredoc_node);
 void	setup_input(t_node *head);
 int		setup_output(t_node *tail, t_node *head);
-void	execute_command(t_node *cmd_node, char **envp, t_node *head);
+void	execute_command(t_node *node, char **envp, t_node *head);
 int		count_commands(t_node *head);
 char	*find_path(char *cmd, char **envp);
 t_node	*find_tail(t_node *head);
 void	handle_child_process(t_exec *exec, t_node *cmd,
 			t_node *head, char **envp);
-void	handle_sigpipe(t_node *head);
 void	process_command(t_exec *exec, t_node *cmd, t_node *head, char **envp);
 int		wait_for_children(t_exec *exec);
 

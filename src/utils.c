@@ -6,7 +6,7 @@
 /*   By: odana <odana@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/22 13:15:27 by odana             #+#    #+#             */
-/*   Updated: 2025/06/24 21:25:31 by odana            ###   ########.fr       */
+/*   Updated: 2025/06/25 11:14:40 by odana            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,10 +69,7 @@ int	setup_output(t_node *tail, t_node *head)
 			flags = O_WRONLY | O_CREAT | O_TRUNC;
 		fd = open(tail->value, flags, 0644);
 		if (fd == -1)
-		{
-			perror("outfile");
 			return (1);
-		}
 		dup2(fd, STDOUT_FILENO);
 		close(fd);
 	}
