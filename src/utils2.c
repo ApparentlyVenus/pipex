@@ -6,7 +6,7 @@
 /*   By: odana <odana@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/21 09:14:15 by odana             #+#    #+#             */
-/*   Updated: 2025/06/24 21:56:52 by odana            ###   ########.fr       */
+/*   Updated: 2025/06/25 11:47:20 by odana            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,13 +89,3 @@ t_node	*find_tail(t_node *head)
 		current = current->next;
 	return (current);
 }
-//./pipex infile.txt "cat" "" ouuu
-//./pipex infile.txt "cat" "cat" ouuu            000 ouuu
-//./pipex infile.txt "cat" "catfff" ooo
-//./pipex here_do ww "cat" "cat" ddd
-//./pipex here_doc "  " " " "cat" ddd
-//./pipex here_doc sss " " "cat" ddd 
-//./pipex cat here_doc sss cat oooooo
-//./pipex zsdughiuzshg cat cat ooooo 
- 
- 
